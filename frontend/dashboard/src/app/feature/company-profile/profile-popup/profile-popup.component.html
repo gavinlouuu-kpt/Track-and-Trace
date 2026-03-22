@@ -1,0 +1,60 @@
+<section class="pop-header ff-flex-between">
+    <h4 id="popupHeading">
+        <ng-container *ngIf="data?.type === 'make'">
+            {{'profilePopup.change'|translate}} {{data?.text}}
+        </ng-container>
+        <ng-container *ngIf="data?.type === 'delete'">
+            {{'profilePopup.deleteMember'|translate}}
+        </ng-container>
+        <ng-container *ngIf="data?.type === 'deleteDoc'">
+            {{'profilePopup.deleteDoc'|translate}}
+        </ng-container>
+        <ng-container *ngIf="data?.type === 'deleteTemplate'">
+            {{'profilePopup.deleteTemplate'|translate}}
+        </ng-container>
+        <ng-container *ngIf="data?.type === 'removeLabel'">
+            {{'profilePopup.removeLabel'|translate}}
+        </ng-container>
+        <ng-container *ngIf="data?.type === 'removeClaim'">
+            {{'profilePopup.removeClaim'|translate}}
+        </ng-container>
+    </h4>
+    <mat-icon class="pointer" (click)="closePopup()">close</mat-icon>
+</section>
+<section class="pop-content flex-column" id="popupContent">
+    <p *ngIf="data?.type === 'make'">{{'profilePopup.make'|translate}} {{data?.text}}?</p>
+    <p *ngIf="data?.type === 'delete'">{{'profilePopup.delete'|translate}}</p>
+    <p *ngIf="data?.type === 'deleteDoc'">{{'profilePopup.doc'|translate}}</p>
+    <p *ngIf="data?.type === 'deleteTemplate'">
+        {{'profilePopup.template'|translate}}
+    </p>
+    <ng-container *ngIf="data?.type === 'removeLabel'">
+        <p>
+            {{'profilePopup.label'|translate}} {{data?.label?.name}}?
+        </p>
+        <p>
+            {{'profilePopup.labelSub'|translate}}
+        </p>
+    </ng-container>
+
+    <ng-container *ngIf="data?.type === 'removeClaim'">
+        <p>
+            {{'profilePopup.claim'|translate}}
+        </p>
+    </ng-container>
+
+    <div class="ff-flex-end" id="popupAction">
+        <app-buttons buttonType="stroked" (buttonClicked)="closePopup()">{{'button.cancel'|translate}}</app-buttons>
+        <app-buttons buttonType="fill" (buttonClicked)="actionButton()">
+            <ng-container *ngIf="data?.type === 'make'">
+                {{'button.make'|translate}} {{data?.text}}
+            </ng-container>
+            <ng-container *ngIf="data?.type === 'delete'|| data?.type === 'deleteDoc'||data?.type === 'deleteTemplate'">
+                {{'button.delete'|translate}}
+            </ng-container>
+            <ng-container *ngIf="data?.type === 'removeLabel' || data?.type === 'removeClaim'">
+                {{'button.remove'|translate}}
+            </ng-container>
+        </app-buttons>
+    </div>
+</section>

@@ -1,0 +1,15 @@
+<section class="pop-header ff-flex-between">
+    <h4>
+        {{'dynamicTemplate.dataLossHeading' |translate }}
+    </h4>
+    <mat-icon class="pointer" (click)="close()">close</mat-icon>
+</section>
+<section class="pop-content">
+    <p>
+        {{'dynamicTemplate.dataLossContent' |translate }}
+    </p>
+</section>
+<section class="ff-flex-between p-20-button">
+    <app-buttons buttonType="stroked" (buttonClicked)="close()">{{'misc.no' |translate }}</app-buttons>
+    <app-buttons buttonType="fill" (buttonClicked)="remove()">{{'misc.yes' |translate }}</app-buttons>
+</section>

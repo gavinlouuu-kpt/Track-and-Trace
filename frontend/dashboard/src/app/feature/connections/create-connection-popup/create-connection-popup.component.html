@@ -1,0 +1,256 @@
+<section class="pop-header ff-flex-between add-connection">
+    <h4>
+        {{'connections.addConnection'|translate}}
+    </h4>
+    <mat-icon class="pointer" (click)="close()" id="closeIcon">close</mat-icon>
+</section>
+<section class="tabs">
+    <app-ff-custom-tab [tabGroupItems]="connectionTabs" [activeTabId]="currentStep"
+        (tabChanged)="changeHistoryTab($event)" [withDescription]="true"></app-ff-custom-tab>
+</section>
+<section class="content" *ngIf="dataLoaded">
+    <ng-container *ngIf="companyForm" [formGroup]="companyForm">
+        <ng-container *ngIf="currentStep === 'basic'">
+            <!-- from stock page  -->
+            <p class="info font-1-normal" *ngIf="incomingData?.stock"
+                [innerHtml]="'connections.fromStock'|translate|safeHtml">
+
+            </p>
+            <!-- add buyer or supplier button clicked  -->
+            <p class="info font-1-normal" *ngIf="!incomingData?.stock && !incomingData?.fullView"
+                [innerHtml]="'connections.addBuyerText'|translate:{name: incomingData?.full_name}|safeHtml">
+
+            </p>
+            <!-- while clicking on the add connection button from listview  -->
+            <section class="p20" *ngIf="incomingData?.fullView">
+                <mat-radio-group class="text-blue" (change)="changeRelation()" formControlName="relation"
+                    aria-label="Select an option">
+                    <mat-radio-button [value]="1">{{'types.supplier' | translate}}</mat-radio-button>
+                    <mat-radio-button [value]="2">{{'types.buyer' | translate}}</mat-radio-button>
+                </mat-radio-group>
+            </section>
+
+            <section class="" formGroupName="basic">
+                <article class="input-container-with-error">
+                    <app-ff-input [label]="typeLabel" [parentFormGroup]="companyForm.get('basic')" controlName="name"
+                        inputSize="full" inputType="text">
+                    </app-ff-input>
+                    <ng-container [ngTemplateOutlet]="formErrorMessages"
+                        [ngTemplateOutletContext]="{formcontrol:'name', formgroup: 'basic'}">
+                    </ng-container>
+                </article>
+                <aside class="d-flex w-100" aria-label="second row">
+                    <article class="w-50-cc input-container-with-error m-r-12">
+                        <app-ff-dropdown [label]="connectionType" [dropdownOptions]="operationTypes"
+                            inputClass="profile" [defaultValue]="companyForm.get('basic.primaryOperation').value"
+                            (selectionChange)="dropdownChanged($event, 'primaryOperation', 'basic')">
+                        </app-ff-dropdown>
+                        <ng-container [ngTemplateOutlet]="formErrorMessages"
+                            [ngTemplateOutletContext]="{formcontrol:'primaryOperation', formgroup: 'basic'}">
+                        </ng-container>
+                    </article>
+                    <article class="w-50-cc input-container-with-error">
+                        <app-ff-input label="{{'company.regNo'|translate}}" [parentFormGroup]="companyForm.get('basic')"
+                            controlName="identificationNo" inputSize="full" inputType="text">
+                        </app-ff-input>
+                    </article>
+                </aside>
+            </section>
+        </ng-container>
+        <ng-container *ngIf="currentStep === 'address'">
+            <section formGroupName="addressDetails" class="second-page">
+                <h3 class="text-blue font-1-bold">
+                    {{'connections.addressDetails'|translate}}
+                </h3>
+                <article class="input-container-with-error">
+                    <app-ff-input label="{{'company.street'|translate}}*"
+                        [parentFormGroup]="companyForm.get('addressDetails')" controlName="street" inputSize="profile"
+                        inputType="text">
+                    </app-ff-input>
+                    <ng-container [ngTemplateOutlet]="formErrorMessages"
+                        [ngTemplateOutletContext]="{formcontrol:'street', formgroup: 'addressDetails'}">
+                    </ng-container>
+                </article>
+                <aside class="d-flex w-100" aria-label="second row">
+                    <article class="w-50-cc input-container-with-error m-r-12">
+                        <app-ff-dropdown label="{{'company.country'|translate}}*" [dropdownOptions]="countryList"
+                            inputClass="profile" [defaultValue]="companyForm.get('addressDetails.country').value"
+                            (selectionChange)="dropdownChanged($event, 'country', 'addressDetails')">
+                        </app-ff-dropdown>
+                        <ng-container [ngTemplateOutlet]="formErrorMessages"
+                            [ngTemplateOutletContext]="{formcontrol:'country', formgroup: 'addressDetails'}">
+                        </ng-container>
+                    </article>
+                    <article class="w-50-cc input-container-with-error">
+                        <app-ff-dropdown label="{{'company.province'|translate}}*" [dropdownOptions]="stateList"
+                            inputClass="profile" [defaultValue]="companyForm.get('addressDetails.province').value"
+                            (selectionChange)="dropdownChanged($event, 'province', 'addressDetails')">
+                        </app-ff-dropdown>
+                        <ng-container [ngTemplateOutlet]="formErrorMessages"
+                            [ngTemplateOutletContext]="{formcontrol:'province', formgroup: 'addressDetails'}">
+                        </ng-container>
+                    </article>
+                </aside>
+                <aside class="d-flex w-100" aria-label="third row">
+                    <article class="w-50-cc input-container-with-error m-r-12">
+                        <app-ff-input label="{{'company.city'|translate}}*"
+                            [parentFormGroup]="companyForm.get('addressDetails')" controlName="city" inputSize="profile"
+                            inputType="text">
+                        </app-ff-input>
+                        <ng-container [ngTemplateOutlet]="formErrorMessages"
+                            [ngTemplateOutletContext]="{formcontrol:'city', formgroup: 'addressDetails'}">
+                        </ng-container>
+                    </article>
+                    <article class="w-50-cc input-container-with-error">
+                        <app-ff-input label="{{'company.postal'|translate}}"
+                            [parentFormGroup]="companyForm.get('addressDetails')" controlName="zipcode"
+                            inputSize="profile" inputType="text">
+                        </app-ff-input>
+                    </article>
+                </aside>
+                <h3 class="text-blue font-1-bold">
+                    {{'companyProfile.subHeading'|translate}}
+                </h3>
+                <aside class="d-flex w-100" aria-label="third row">
+                    <article class="w-50-cc input-container-with-error m-r-12">
+                        <app-ff-input label="{{'user.firstName'|translate}}*"
+                            [parentFormGroup]="companyForm.get('addressDetails')" controlName="inFirstName"
+                            inputSize="profile" inputType="text">
+                        </app-ff-input>
+                        <ng-container [ngTemplateOutlet]="formErrorMessages"
+                            [ngTemplateOutletContext]="{formcontrol:'inFirstName', formgroup: 'addressDetails'}">
+                        </ng-container>
+                    </article>
+                    <article class="w-50-cc input-container-with-error">
+                        <app-ff-input label="{{'user.lastName'|translate}}*"
+                            [parentFormGroup]="companyForm.get('addressDetails')" controlName="inLastName"
+                            inputSize="profile" inputType="text">
+                        </app-ff-input>
+                        <ng-container [ngTemplateOutlet]="formErrorMessages"
+                            [ngTemplateOutletContext]="{formcontrol:'inLastName', formgroup: 'addressDetails'}">
+                        </ng-container>
+                    </article>
+                </aside>
+                <article class="w-100 input-container-with-error">
+                    <app-ff-input label="{{'user.email'|translate}}*"
+                        [parentFormGroup]="companyForm.get('addressDetails')" controlName="inEmail" inputSize="profile"
+                        inputType="text">
+                    </app-ff-input>
+                    <ng-container [ngTemplateOutlet]="formErrorMessages"
+                        [ngTemplateOutletContext]="{formcontrol:'inEmail', formgroup: 'addressDetails'}">
+                    </ng-container>
+                </article>
+                <aside class="d-flex w-100" aria-label="fourth row">
+                    <article class="w-50-cc input-container-with-error m-r-12">
+                        <app-ff-dropdown label="{{'company.countryCode'|translate}}*"
+                            [dropdownOptions]="countryCodeList" inputClass="profile"
+                            [defaultValue]="companyForm.get('addressDetails.inDialCode').value"
+                            (selectionChange)="dropdownChanged($event, 'dialCode', 'addressDetails')">
+                        </app-ff-dropdown>
+                        <ng-container [ngTemplateOutlet]="formErrorMessages"
+                            [ngTemplateOutletContext]="{formcontrol:'inDialCode', formgroup: 'addressDetails'}">
+                        </ng-container>
+                    </article>
+                    <article class="w-50-cc input-container-with-error">
+                        <app-ff-input label="{{'company.mobile'|translate}}*"
+                            [parentFormGroup]="companyForm.get('addressDetails')" controlName="inMobile"
+                            inputSize="profile" inputType="text">
+                        </app-ff-input>
+                        <ng-container [ngTemplateOutlet]="formErrorMessages"
+                            [ngTemplateOutletContext]="{formcontrol:'inMobile', formgroup: 'addressDetails'}">
+                        </ng-container>
+                    </article>
+                </aside>
+            </section>
+        </ng-container>
+        <ng-container *ngIf="currentStep === 'invite'">
+            <p class="info font-1-normal text-blue" *ngIf="incomingData?.stock">
+                {{'connections.areYouSure'|translate}}
+                <ng-container *ngIf="!incomingData?.stockInvite">
+                    <span class="font-1-bold">{{companyForm.get('basic.name').value}}</span>
+                </ng-container>
+                <ng-container *ngIf="incomingData?.stockInvite">
+                    <span class="font-1-bold">{{incomingData?.name}}</span>
+                </ng-container>
+                {{'connections.toConnections'|translate}}
+            </p>
+
+            <ng-container *ngIf="incomingData?.addConnection">
+                <p *ngIf="incomingData.connectionType ==='buyer'" class="info font-1-normal text-blue"
+                    [innerHtml]="'connections.buyerTag'|translate: {name:companyForm.get('basic.name').value }|safeHtml">
+                </p>
+                <p *ngIf="incomingData.connectionType ==='supplier'" class="info font-1-normal text-blue"
+                    [innerHtml]="'connections.buyerTag'|translate: {name:companyForm.get('basic.name').value }|safeHtml">
+                </p>
+                <ul class="supplied-for" *ngIf="supplySelection.length">
+                    <li *ngFor="let supply of supplySelection" class="ff-flex-align-center">
+                        {{supply.name}} &nbsp; &#10004;
+                    </li>
+                </ul>
+            </ng-container>
+
+
+            <!-- stock invite: when sending a stock to a company which is not connected  -->
+            <article class="w-100 flex-column mb-10 " *ngIf="incomingData?.stockInvite">
+                <app-ff-dropdown label="{{'company.buyerType'|translate}}*" [dropdownOptions]="operationTypes"
+                    inputClass="profile" [defaultValue]="companyForm.get('primaryOperation').value"
+                    (selectionChange)="dropdownChangedInvite($event)">
+                </app-ff-dropdown>
+                <span class="error-message"
+                    *ngIf="companyForm.get('primaryOperation').errors?.required && companyForm.get('primaryOperation')?.touched">
+                    {{'formValidation.commonValidationError'|translate}}
+                </span>
+            </article>
+            <!-- end  -->
+
+            <article class="input-container-with-error w-100">
+                <app-ff-input label="{{'connections.invite'|translate}}" [parentFormGroup]="companyForm"
+                    controlName="message" inputSize="profile" [isTextarea]="true" class="form-items w-100">
+                </app-ff-input>
+            </article>
+            <p class="info font-1-normal">
+                {{'connections.inviteInfo'|translate:{chainName: incomingData?.chainName} }}
+            </p>
+            <p>
+                <mat-checkbox class="text-sm text-blue font-1-normal" formControlName="silentInvite" id="silentInvite">
+                    {{'connections.dontSent'|translate}}
+                </mat-checkbox>
+            </p>
+        </ng-container>
+    </ng-container>
+    <app-action-buttons *ngIf="nextButtonState" [buttonPrevText]="prevButton" [buttonNextState]="nextButtonState"
+        (buttonsClicked)="nextClicked($event)"></app-action-buttons>
+</section>
+
+<section class="loader-wrapper ff-flex-center" *ngIf="!dataLoaded">
+    <app-loader [loaderText]="loaderText" loaderType="type1"></app-loader>
+</section>
+
+<ng-template let-formcontrol="formcontrol" let-formgroup="formgroup" #formErrorMessages>
+    <span class="error-message"
+        *ngIf="companyForm.get(formgroup).get(formcontrol)?.errors?.required && companyForm.get(formgroup).get(formcontrol)?.touched">
+        {{'formValidation.commonValidationError'|translate}}
+    </span>
+
+    <ng-container
+        *ngIf="formcontrol === 'name' && companyForm.get('basic.name').value && companyForm.get(formgroup).get(formcontrol).errors?.connected">
+        <span class="error-message">
+            {{'formValidation.buyerExist'|translate}}
+        </span>
+    </ng-container>
+
+    <ng-container *ngIf="formcontrol === 'inMobile' && companyForm.get('addressDetails').get(formcontrol)?.touched">
+        <span class="error-message" *ngIf="companyForm.get('addressDetails').get(formcontrol)?.errors?.pattern">
+            {{'formValidation.invalidMobile'|translate}}
+        </span>
+        <span class="error-message" *ngIf="companyForm.get(formgroup).get(formcontrol)?.errors?.minlength">
+            {{'formValidation.invalidMobile'|translate}}
+        </span>
+    </ng-container>
+    <ng-container *ngIf="formcontrol === 'message'">
+        <span class="error-message"
+            *ngIf="companyForm.get(formgroup).get(formcontrol)?.errors?.maxlength && companyForm.get(formgroup).get(formcontrol)?.touched">
+            {{'formValidation.reduceDesc'|translate}}
+        </span>
+    </ng-container>
+</ng-template>

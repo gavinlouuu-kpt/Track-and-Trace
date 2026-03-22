@@ -1,0 +1,19 @@
+{% extends 'admin/index.html' %}
+{% block content %}
+    <div>
+        <div class="model-button" style="position: relative;display: inline-block;">
+            <a class="button" href="{% url 'migrate_connect' %}">Migrate From Connect</a>
+        </div>
+        <div class="model-button" style="position: relative;display: inline-block;">
+            <a class="button" href="{% url 'copy_sc' %}">Copy Supplychain
+                Connections</a>
+        </div>
+    </div>
+    <div class="model-description">
+        <p></p>
+        <p></p>
+    </div>
+    <div id="content-main">
+        {{ block.super }}
+    </div>
+{% endblock %}

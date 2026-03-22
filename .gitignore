@@ -1,0 +1,46 @@
+# Environment & secrets
+.env
+*.env.local
+secret.ini
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.venv/
+venv/
+*.whl
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.angular/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Build artifacts
+frontend/dashboard/dist/
+frontend/admin/dist/
+backend/fairtrace_v2/static/
+backend/fairtrace_v2/dump.rdb
+
+# Coverage
+.coverage
+htmlcov/

@@ -1,0 +1,108 @@
+<section class="row-md">
+    <div class="col-md-4">
+        <section class="header ff-flex-between">
+            <h3>{{'stocks.heading1'|translate}}</h3>
+
+            <app-buttons buttonType="fill" (buttonClicked)="viewStockClicked()" id="viewStockButton">
+                {{'button.viewStock'|translate}}
+            </app-buttons>
+        </section>
+
+        <section class="ff-table-container w-100">
+            <table aria-label="Most recent stocks">
+                <thead>
+                    <tr>
+                        <th class="normal-column pointer">
+                            {{'transactions.product'|translate}}
+                        </th>
+                        <th class="normal-column pointer">
+                            {{'transactions.qty'|translate}} (kg)
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of stockData; trackBy: trackByFnStock" class="pointer">
+                        <td class="mat-cell normal-column text-overflow">
+                            {{item?.name}}
+                        </td>
+                        <td class="mat-cell normal-column">
+                            {{item?.quantity}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <aside class="no-data w-100" aria-label="no data" *ngIf="stockData?.length === 0" [hidden]="stockLoading">
+                {{'stocks.noStocks'|translate}}
+            </aside>
+
+            <app-loader loaderType="type1" loaderText="{{'loaderText.recentStocks'|translate}}" *ngIf="stockLoading"
+                class="min-h-300"></app-loader>
+
+        </section>
+    </div>
+    <div class="col-md-8">
+        <section class="header ff-flex-between">
+            <h3>{{'transactions.recent'|translate}}</h3>
+
+            <app-buttons buttonType="fill" (buttonClicked)="viewTransactionClicked()">
+                {{'button.viewTr'|translate}}
+            </app-buttons>
+        </section>
+
+        <section class="ff-table-container w-100">
+            <table aria-label="Most recent transaction list">
+                <thead>
+                    <tr>
+                        <th class="large-column pointer">
+                            {{'transactions.product'|translate}}
+                        </th>
+                        <th class="normal-column pointer">
+                            {{'transactions.typeText'|translate}}
+                        </th>
+                        <th class="normal-column pointer">
+                            {{'connections.tooltip.connection'|translate}}
+                        </th>
+                        <th class="normal-column pointer">
+                            {{'misc.date'|translate}}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let transaction of transactionData; trackBy: trackByFnTransaction; let j=index"
+                        class="pointer" id="rowTr-{{j}}">
+                        <td class="mat-cell normal-column">
+                            {{ transaction?.products[0]?.name }}
+                        </td>
+                        <td class="mat-cell normal-column">
+                            <span *ngIf="transaction?.type == 1">
+                                {{'stocks.type1'|translate}}
+                            </span>
+                            <span *ngIf="transaction?.type == 2">
+                                {{'stocks.type2'|translate}}
+                            </span>
+                            <span *ngIf="transaction?.type == 3">
+                                {{'stocks.type3'|translate}}
+                            </span>
+                        </td>
+                        <td class="mat-cell normal-column">
+                            {{ transaction?.connection?.name }}
+                        </td>
+                        <td class="mat-cell normal-column">
+                            {{ transaction?.date * 1000 | date: 'dd MMMM y' }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <aside class="no-data w-100" aria-label="no data" *ngIf="transactionData?.length === 0"
+                [hidden]="transactionLoading">
+                {{'transactions.noRecent'|translate}}
+            </aside>
+
+            <app-loader loaderType="type1" loaderText="{{'loaderText.recentTr'|translate}}" *ngIf="transactionLoading"
+                class="min-h-300"></app-loader>
+
+        </section>
+    </div>
+</section>

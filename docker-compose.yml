@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  # ── Backend API ──────────────────────────────────────────────
+  api:
+    container_name: trace-api
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: python fairtrace_v2/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/usr/src/app/
+      - ./config/secret.ini:/etc/secret/fairtrace_v2/secret.ini:ro
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./config/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      graphdb:
+        condition: service_started
+    entrypoint: "/usr/src/app/entrypoint.sh"
+    networks:
+      - trace-net
+
+  # ── Celery Worker ────────────────────────────────────────────
+  celery:
+    container_name: trace-celery
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A fairtrace_v2 worker -l info -Q low,high,ci_queue
+    volumes:
+      - ./backend:/usr/src/app/
+      - ./config/secret.ini:/etc/secret/fairtrace_v2/secret.ini:ro
+    env_file:
+      - ./config/.env
+    depends_on:
+      - api
+    networks:
+      - trace-net
+
+  # ── Celery Beat ──────────────────────────────────────────────
+  celery-beat:
+    container_name: trace-celery-beat
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A fairtrace_v2 beat -l info
+    volumes:
+      - ./backend:/usr/src/app/
+      - ./config/secret.ini:/etc/secret/fairtrace_v2/secret.ini:ro
+    env_file:
+      - ./config/.env
+    depends_on:
+      - api
+    networks:
+      - trace-net
+
+  # ── PostgreSQL ───────────────────────────────────────────────
+  db:
+    container_name: trace-db
+    image: postgres:13-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-trace_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-trace_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-trace_db}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trace_user}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - trace-net
+
+  # ── Redis ────────────────────────────────────────────────────
+  redis:
+    container_name: trace-redis
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6380:6379"
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    networks:
+      - trace-net
+
+  # ── Neo4j (Graph DB) ────────────────────────────────────────
+  graphdb:
+    container_name: trace-neo4j
+    image: neo4j:4.4
+    restart: unless-stopped
+    ports:
+      - "7475:7474"
+      - "7688:7687"
+    environment:
+      NEO4J_AUTH: ${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-trace_neo4j_pass}
+      NEO4J_dbms_memory_pagecache_size: 512M
+      NEO4J_dbms_memory_heap_initial__size: 512M
+      NEO4J_dbms_memory_heap_max__size: 1G
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    networks:
+      - trace-net
+
+  # ── Nginx (reverse proxy + frontend static files) ───────────
+  nginx:
+    container_name: trace-nginx
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - dashboard_dist:/usr/share/nginx/dashboard:ro
+      - admin_dist:/usr/share/nginx/admin:ro
+    depends_on:
+      - api
+    networks:
+      - trace-net
+
+  # ── Frontend Builds (one-shot build containers) ─────────────
+  dashboard-build:
+    container_name: trace-dashboard-build
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend/dashboard:/app
+      - dashboard_dist:/app/dist/fairfood-trace-dashboard
+    command: sh -c "npm ci && npx ng build --configuration=selfhosted"
+    profiles:
+      - build
+
+  admin-build:
+    container_name: trace-admin-build
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend/admin:/app
+      - admin_dist:/app/dist/fairfood-admin
+    command: sh -c "npm ci && npx ng build --configuration=selfhosted"
+    profiles:
+      - build
+
+volumes:
+  postgres_data:
+  redis_data:
+  neo4j_data:
+  neo4j_logs:
+  dashboard_dist:
+  admin_dist:
+
+networks:
+  trace-net:
+    driver: bridge

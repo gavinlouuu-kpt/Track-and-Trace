@@ -1,0 +1,18 @@
+<section class="pop-header ff-flex-between">
+  <h4>
+    {{ 'logout.heading' | translate }}
+  </h4>
+</section>
+<section class="pop-content flex-column">
+  <p>
+    {{ 'logout.content' | translate }}
+  </p>
+  <article class="ff-flex-end">
+    <app-buttons buttonType="stroked" (buttonClicked)="close()" customId="logoutCancel">
+      {{ 'button.cancel' | translate }}
+    </app-buttons>
+    <app-buttons buttonType="fill" (buttonClicked)="logout()" customId="logoutYes">
+      {{ 'button.logout' | translate }}
+    </app-buttons>
+  </article>
+</section>

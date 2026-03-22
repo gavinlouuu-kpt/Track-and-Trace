@@ -1,0 +1,173 @@
+<div class="page-container">
+    <section class="heading-section">
+        <h1 class="page-heading">
+            {{ 'claim.detailsHeading' | translate }}
+        </h1>
+    </section>
+    <app-loader [loaderText]="'loaderText.claim' | translate" [loaderType]="'type1'" *ngIf="loading"
+        class="min-h-300"></app-loader>
+
+    <section class="top-box ff-flex-align-center" *ngIf="!loading">
+        <article class="icon-wrapper ff-flex-center">
+            <img src="../../../../assets/images/claim_icon.svg" alt="claim">
+        </article>
+        <aside aria-label="info" class="flex-column info">
+            <span class="value-tr" id="claimeName">{{currentClaim?.claim?.name}}</span>
+            <span class="value-tr ff-flex-align-center font-1-normal" id="claimStatus">
+                <ng-container *ngIf="currentClaim.status === 1">
+                    {{ 'status.pending' | translate }}
+                </ng-container>
+                <ng-container *ngIf="currentClaim.status === 2">
+                    <mat-icon>check_circle</mat-icon>
+                    {{ 'status.verified' | translate }}
+                </ng-container>
+                <ng-container *ngIf="currentClaim.status === 3">{{ 'status.rejected' | translate }}</ng-container>
+            </span>
+        </aside>
+    </section>
+
+    <section class="tabs" *ngIf="!loading">
+        <app-ff-custom-tab [tabGroupItems]="tabGroup" [activeTabId]="currentTab"
+            (tabChanged)="changeTab($event)"></app-ff-custom-tab>
+    </section>
+
+
+    <!-- selecting and showing claim details here  -->
+    <section class="details-container" *ngIf="!loading">
+        <ng-container *ngIf="currentTab === 'basic'">
+            <article class="item item-custom w-100">
+                <span class="key">{{ 'claim.desc' | translate }}</span>
+                <span class="value">
+                    {{currentClaim?.claim?.description_full}}
+                </span>
+            </article>
+            <ng-container *ngIf="currentClaim.status === 3">
+                <article class="item item-custom w-100">
+                    <span class="key">Assigned to</span>
+                    <span class="value">
+                        {{currentClaim?.verifier?.name }}
+                    </span>
+                </article>
+                <article class="item item-custom w-100">
+                    <span class="key">Reason for rejection</span>
+                    <span class="value">
+                        {{currentClaim?.note}}
+                    </span>
+                </article>
+            </ng-container>
+
+            <ng-container *ngIf="currentClaim.status === 2">
+                <article class="item item-custom w-100">
+                    <span class="key">Verified by</span>
+                    <span class="value">
+                        {{currentClaim?.verifier?.name }}
+                    </span>
+                </article>
+            </ng-container>
+            <span class="w-100 value-tr"
+                *ngIf="currentClaim.criteria?.[0] && currentClaim.criteria[0]?.field_responses.length > 0">
+                {{ 'claim.evidenceTextPlural' | translate }}
+            </span>
+            <section class="ff-flex-align-center flex-wrap">
+                <ng-container
+                    *ngFor="let field of currentClaim.criteria?.[0]?.field_responses;trackBy: trackByFn;let j=index ">
+                    <article class="item" *ngIf="field.type !==3">
+                        <span class="key" id="evidence{{j}}">{{ field.title }}</span>
+                        <span class="value" id="evidenceValue{{j}}">
+                            {{ field.response }}
+                        </span>
+                    </article>
+                    <article class="item" *ngIf="field.type === 3">
+                        <span class="key">{{ 'claim.fileHeading' | translate }}</span>
+                        <span class="value" (click)="downloadFile(field?.file)" [ngClass]="{'pointer': field.file}">
+                            {{ field.title }}
+                        </span>
+                    </article>
+                </ng-container>
+            </section>
+
+            <section class="flex-column">
+                <span class="value-tr">Transaction details</span>
+                <section class="box row-md ff-flex-align-center">
+                    <article class="col-md-3 flex-column">
+                        <span class="label-tr">{{ 'transactions.id' | translate }}</span>
+                        <span class="value-tr">{{currentClaim.transaction?.number}}</span>
+                    </article>
+                    <article class="col-md-3 flex-column">
+                        <span class="label-tr">{{ 'transactions.date' | translate }}</span>
+                        <span *ngIf="currentClaim.transaction?.date" class="value-tr">{{currentClaim.transaction?.date * 1000 | date: 'dd MMMM y' }}</span>
+                    </article>
+                    <article class="col-md-3 flex-column">
+                        <span class="label-tr">{{ 'transactions.product' | translate }}</span>
+                        <span class="value-tr">{{currentClaim.product?.name}}</span>
+                    </article>
+                    <article class="col-md-3">
+                        <app-buttons buttonType="stroked" buttonSize="medium" (buttonClicked)="viewTransaction()"
+                            buttonSize="medium" customId="viewTransaction">
+                            {{ 'button.viewTransaction' | translate }}
+                        </app-buttons>
+                    </article>
+
+                </section>
+            </section>
+            <ng-container *ngIf="canApprove">
+                <section class="ff-flex-start p-20">
+                    <app-buttons buttonType="stroked" (buttonClicked)="rejectClaim()">
+                        {{'claimDetails.reject' | translate}}
+                    </app-buttons>
+                    <app-buttons buttonType="fill" (buttonClicked)="acceptClaim()">
+                        {{'claimDetails.accept' | translate}}
+                    </app-buttons>
+                </section>
+            </ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="currentTab === 'comment'">
+            <article class="comment-section">
+                <span class="w-100 value-tr ">
+                    {{ 'claim.newComment' | translate }}
+                </span>
+                <article class="flex-column">
+                    <app-ff-input label="New comment" [parentFormGroup]="detailsForm" controlName="comments"
+                        inputSize="full" [isTextarea]="true" class="w-100">
+                    </app-ff-input>
+                    <span class="error-message"
+                        *ngIf="detailsForm.get('comments')?.errors?.required && (detailsForm.get('comments')?.touched)">
+                        {{ 'formValidation.commonValidationError' | translate }}
+                    </span>
+                    <span class="error-message"
+                        *ngIf="detailsForm.get('comments')?.errors?.notOnlyWhitespace && (detailsForm.get('comments')?.touched) && (!detailsForm.get('comments')?.errors?.required)">
+                        {{ 'formValidation.whiteSpaceError' | translate }}
+                    </span>
+                    <app-buttons buttonType="stroked" buttonSize="medium"
+                        [isDisabled]="detailsForm.get('comments').invalid || updatingComment"
+                        (buttonClicked)="addComments()" class="w-100 ff-flex-end" customId="addComment">
+                        <span *ngIf="!updatingComment">{{ 'claim.comment' | translate }}</span>
+                        <span *ngIf="updatingComment">{{ 'claim.adding' | translate }}</span>
+                    </app-buttons>
+                </article>
+
+            </article>
+            <section class="comment-list">
+                <ul class="flex-column">
+                    <li *ngFor="let item of currentClaim.comments" class="ff-flex-start">
+                        <span class="avatar-round">
+                            {{item?.sender?.name.split('')[0]}}
+                        </span>
+                        <article class="flex-column">
+                            <span class="value-tr">
+                                {{item?.sender?.name}}
+                                <span class="label-tr">
+                                    {{item.created_on * 1000 | date: 'dd MMMM y' }}
+                                </span>
+                            </span>
+                            <span class="value-tr">
+                                {{item?.message}}
+                            </span>
+                        </article>
+                    </li>
+                </ul>
+            </section>
+        </ng-container>
+    </section>
+</div>

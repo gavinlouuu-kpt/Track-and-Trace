@@ -1,0 +1,49 @@
+{
+  "loaderText": {
+    "authenticating": "Authenticating",
+    "awaitingUserInput": "Awaiting user input",
+    "invalidRequest": "Invalid request redirecting to login page",
+    "somethingWentWrong": "Something went wrong! Please try again."
+  },
+  "dropdownLabel": {
+    "supplyChain": "Supply chain",
+    "commodity": "Commodity"
+  },
+  "dropdownOptions": {
+    "lastSixMonth": "Last 6 months",
+    "lastYear":"Last 12 months"
+  },
+  "clearBtnText":{
+    "resetToAll":"Reset to All",
+    "clearSelection":"Clear selection"
+  },
+  "selectedValue":{
+    "selectHere":"Select here",
+    "all":"All"
+  },
+  "header": {
+    "admin": "Admin",
+    "logout": "Logout"
+  },
+  "sideBar": {
+    "dashboard": "Dashboard",
+    "companies": "Companies",
+    "farmers": "Farmers",
+    "supplyChains": "Supply chains",
+    "products": "Products",
+    "claims": "Claims",
+    "transactions": "Transactions",
+    "team": "Team"
+  },
+  "button": {
+    "continueWithAdmin": "Continue with admin app",
+    "logoutFromAdmin": "Logout from admin"
+  },
+  "heading": {
+    "adminLoggedIn": "Admin logged in"
+  },
+  "login": {},
+  "dashboard": {
+    "heading": "Dashboard"
+  }
+}

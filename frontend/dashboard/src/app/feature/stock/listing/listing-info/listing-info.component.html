@@ -1,0 +1,23 @@
+<section class="info-wrap ff-flex-between" *ngIf="showInfo$ | async">
+    <span class="left font-1-bold text-blue">
+        {{selectedInformation?.noBatches === 1 ? 1+' item': selectedInformation?.noBatches +' items'}} selected
+    </span>
+    <aside aria-label="selected summary" class="right">
+        <span class="summary font-1-medium">Summary:
+            <b>{{selectedInformation?.noBatches}}</b>
+            {{selectedInformation?.noBatches === 1 ?'Batch':'Batches'}}
+            |
+            <span><b>{{selectedInformation?.totalQuantity}}</b>kg</span>
+        </span>
+        <span class="view-selected pointer" *ngIf="!(hideViewSelected$ | async)">
+            <span class="value-tr">
+                View selected batches only
+            </span>
+            <label class="switch">
+                <input type="checkbox" id="connection-view-switch" name="view" (change)="viewSelected($event)"
+                    [checked]="selectedBatchesOnly">
+                <span class="slider round stock"></span>
+            </label>
+        </span>
+    </aside>
+</section>
