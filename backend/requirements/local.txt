@@ -4,3 +4,6 @@ keyring==11.0.0
 keyrings.alt
 fabric2==2.5.0
 django-nose==1.4.7
+django-storages==1.8
+django-s3-folder-storage==0.5
+gunicorn==19.9.0

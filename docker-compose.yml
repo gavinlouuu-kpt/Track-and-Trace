@@ -15,6 +15,10 @@ services:
       - "8000:8000"
     env_file:
       - ./config/.env
+    environment:
+      - SQL_HOST=db
+      - SQL_PORT=5432
+      - DATABASE=postgres
     depends_on:
       db:
         condition: service_healthy
@@ -33,11 +37,15 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     command: celery -A fairtrace_v2 worker -l info -Q low,high,ci_queue
+    working_dir: /usr/src/app/fairtrace_v2
     volumes:
       - ./backend:/usr/src/app/
       - ./config/secret.ini:/etc/secret/fairtrace_v2/secret.ini:ro
     env_file:
       - ./config/.env
+    environment:
+      - SQL_HOST=db
+      - SQL_PORT=5432
     depends_on:
       - api
     networks:
@@ -50,11 +58,15 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     command: celery -A fairtrace_v2 beat -l info
+    working_dir: /usr/src/app/fairtrace_v2
     volumes:
       - ./backend:/usr/src/app/
       - ./config/secret.ini:/etc/secret/fairtrace_v2/secret.ini:ro
     env_file:
       - ./config/.env
+    environment:
+      - SQL_HOST=db
+      - SQL_PORT=5432
     depends_on:
       - api
     networks:
@@ -65,7 +77,7 @@ services:
     container_name: trace-db
     image: postgres:13-alpine
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - trace_postgres_data:/var/lib/postgresql/data/
     ports:
       - "5433:5432"
     environment:
@@ -89,7 +101,7 @@ services:
       - "6380:6379"
     command: redis-server --save 20 1 --loglevel warning
     volumes:
-      - redis_data:/data
+      - trace_redis_data:/data
     networks:
       - trace-net
 
@@ -102,13 +114,13 @@ services:
       - "7475:7474"
       - "7688:7687"
     environment:
-      NEO4J_AUTH: ${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-trace_neo4j_pass}
-      NEO4J_dbms_memory_pagecache_size: 512M
-      NEO4J_dbms_memory_heap_initial__size: 512M
-      NEO4J_dbms_memory_heap_max__size: 1G
+      NEO4J_AUTH: neo4j/trace_neo4j_pass
+      NEO4J_dbms_memory_pagecache_size: 256M
+      NEO4J_dbms_memory_heap_initial__size: 256M
+      NEO4J_dbms_memory_heap_max__size: 512M
     volumes:
-      - neo4j_data:/data
-      - neo4j_logs:/logs
+      - trace_neo4j_data:/data
+      - trace_neo4j_logs:/logs
     networks:
       - trace-net
 
@@ -117,47 +129,22 @@ services:
     container_name: trace-nginx
     image: nginx:alpine
     ports:
-      - "80:80"
+      - "8090:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - dashboard_dist:/usr/share/nginx/dashboard:ro
-      - admin_dist:/usr/share/nginx/admin:ro
+      - ./frontend/dashboard/dist/fairfood-trace-dashboard:/usr/share/nginx/dashboard:ro
+      - ./frontend/admin/dist/fairfood-admin:/usr/share/nginx/admin:ro
     depends_on:
       - api
     networks:
       - trace-net
 
-  # ── Frontend Builds (one-shot build containers) ─────────────
-  dashboard-build:
-    container_name: trace-dashboard-build
-    image: node:18-alpine
-    working_dir: /app
-    volumes:
-      - ./frontend/dashboard:/app
-      - dashboard_dist:/app/dist/fairfood-trace-dashboard
-    command: sh -c "npm ci && npx ng build --configuration=selfhosted"
-    profiles:
-      - build
-
-  admin-build:
-    container_name: trace-admin-build
-    image: node:18-alpine
-    working_dir: /app
-    volumes:
-      - ./frontend/admin:/app
-      - admin_dist:/app/dist/fairfood-admin
-    command: sh -c "npm ci && npx ng build --configuration=selfhosted"
-    profiles:
-      - build
-
 volumes:
-  postgres_data:
-  redis_data:
-  neo4j_data:
-  neo4j_logs:
-  dashboard_dist:
-  admin_dist:
+  trace_postgres_data:
+  trace_redis_data:
+  trace_neo4j_data:
+  trace_neo4j_logs:
 
 networks:
   trace-net:
