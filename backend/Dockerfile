@@ -24,8 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
-RUN pip install --upgrade pip setuptools wheel
+# Upgrade pip (cap at <24.1 for celery 4.4.2 metadata compat)
+RUN pip install --upgrade "pip<24.1" setuptools wheel
 
 # Install Python dependencies
 COPY ./requirements/ /tmp/requirements/
