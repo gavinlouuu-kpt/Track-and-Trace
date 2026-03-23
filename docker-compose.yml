@@ -7,7 +7,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: python fairtrace_v2/manage.py runserver 0.0.0.0:8000
+    command: python manage.py runserver 0.0.0.0:8000
+    working_dir: /usr/src/app/fairtrace_v2
     volumes:
       - ./backend:/usr/src/app/
       - ./config/secret.ini:/etc/secret/fairtrace_v2/secret.ini:ro
