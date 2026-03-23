@@ -141,6 +141,25 @@ services:
     networks:
       - trace-net
 
+  # ── Frontend Builds (run once with --profile build) ─────────
+  dashboard-build:
+    container_name: trace-dashboard-build
+    image: node:18-alpine
+    profiles: ["build"]
+    working_dir: /app
+    volumes:
+      - ./frontend/dashboard:/app
+    command: sh -c "npm install && npm run build"
+
+  admin-build:
+    container_name: trace-admin-build
+    image: node:18-alpine
+    profiles: ["build"]
+    working_dir: /app
+    volumes:
+      - ./frontend/admin:/app
+    command: sh -c "npm install && npm run build"
+
 volumes:
   trace_postgres_data:
   trace_redis_data:
