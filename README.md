@@ -357,6 +357,94 @@ docker compose logs <service-name>   # Check what's failing
 docker compose ps                     # See container states
 ```
 
+## Known Version Issues
+
+This project was forked from an older codebase with pinned dependencies. Several version incompatibilities exist that you may encounter during builds or at runtime.
+
+### Backend (Python)
+
+#### Python 3.8 vs package requirements
+
+The Dockerfile uses **Python 3.8.13**, but several pinned packages require Python 3.9+:
+
+| Package | Pinned Version | Issue | Fix |
+|---------|---------------|-------|-----|
+| `pandas` | 2.0.3 | Requires Python 3.9+ | Downgrade to `pandas==1.5.3` |
+| `pyspark` | 3.4.1 | Requires Python 3.9+ | Downgrade to `pyspark==3.2.3` or remove if unused |
+| `Pillow` | 10.0.0 | Last version with 3.8 support, but at the edge | Downgrade to `Pillow==9.5.0` for safety |
+
+These are in `backend/requirements/base.txt`. If the backend Docker build fails with pip resolution errors, these are the most likely cause.
+
+#### Outdated packages with Python 3.8 compatibility issues
+
+| Package | Pinned Version | Issue | Fix |
+|---------|---------------|-------|-----|
+| `greenlet` | 0.4.15 | Does not support Python 3.8 | Upgrade to `greenlet==1.1.3` |
+| `gevent` | 1.4.0 | Too old for Python 3.8 | Upgrade to `gevent==21.12.0` |
+| `gunicorn` | 19.9.0 | Pre-dates Python 3.8 | Upgrade to `gunicorn==20.1.0` |
+| `keyring` | 11.0.0 | Too old for Python 3.8 | Upgrade to `keyring==23.13.1` |
+
+These are in `backend/requirements/local.txt` and `development.txt`.
+
+#### Celery and pip compatibility
+
+`celery==4.4.2` has broken metadata that causes install failures with pip 24.1+. The Dockerfile already works around this by capping pip:
+```dockerfile
+RUN pip install --upgrade "pip<24.1"
+```
+
+If you upgrade pip, Celery will fail to install.
+
+#### Duplicate/conflicting pins in base.txt
+
+`backend/requirements/base.txt` has some redundant entries:
+- `tqdm==4.64.1` (line 55) AND `tqdm>=4.64.0` (line 58)
+- `geopy==2.3.0` (line 56) AND `geopy>=2.2.0` (line 61)
+- `lat-lon-parser==1.3.0` (line 57) AND `lat-lon-parser>=1.3.0` (line 62)
+
+These don't break the build but may cause confusion.
+
+#### Unpinned git dependency
+
+`backend/requirements/base.txt` references a git repo with no version pin:
+```
+git+https://github.com/cied/django-neomodel.git
+```
+If this repo is removed or has breaking changes, the build will fail. Consider vendoring a known-good version.
+
+### Frontend (Angular/Node)
+
+#### Node version
+
+Angular 16 officially supports **Node 16.14+ or 18.10+**. The docker-compose build containers use `node:18-alpine` which works. If building locally, ensure you're on Node 16 or 18 (not 20+, which may have issues with Angular 16).
+
+#### Local `.tgz` dependencies
+
+Both frontends depend on locally bundled packages:
+
+**Dashboard** (`frontend/dashboard/package.json`):
+```json
+"fairfood-form-components": "file:fairfood-form-components-0.2.6.tgz"
+"fairfood-utils": "file:fairfood-utils-0.3.3.tgz"
+```
+
+**Admin** (`frontend/admin/package.json`):
+```json
+"fairfood-form-components": "file:fairfood-form-components-0.2.2.tgz"
+"fairfood-utils": "file:fairfood-utils-0.3.3.tgz"
+```
+
+If these `.tgz` files are missing (e.g., not committed to git or excluded by `.gitignore`), `npm install` will fail. Verify they exist:
+```bash
+ls frontend/dashboard/*.tgz frontend/admin/*.tgz
+```
+
+Note: The dashboard directory also contains older versions (`fairfood-form-components-0.0.9.tgz`, `fairfood-utils-0.1.1.tgz`) that are unused and can be safely removed.
+
+#### TypeScript version mismatch
+
+The dashboard uses **TypeScript 4.9.4** while the admin uses **TypeScript 5.1.6**. This doesn't prevent builds (they build independently), but be aware of it if sharing code between the two apps.
+
 ## What's Changed from Upstream
 
 ### Blockchain: Stubbed Out
