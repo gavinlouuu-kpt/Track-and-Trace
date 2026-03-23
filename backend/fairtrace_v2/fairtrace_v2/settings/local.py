@@ -66,8 +66,8 @@ if SENTRY_DSN:
     sentry_sdk.init(dsn=SENTRY_DSN, integrations=[DjangoIntegration()])
 
 # ── Blockchain (stubbed out) ──────────────────────────────────
-# BC_MIDDLEWARE_BASE_URL is set in base.py. Override to prevent calls.
-BC_MIDDLEWARE_BASE_URL = ""
+# BC_MIDDLEWARE_BASE_URL is set in base.py. Override to a dummy (must be non-empty to pass assert).
+BC_MIDDLEWARE_BASE_URL = "http://blockchain-stub-disabled/"
 
 # Hedera explorers - make them no-ops
 HEDERA_ACCOUNT_EXPLORER = "#"
