@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --prod",
+    "build": "ng build --configuration selfhosted",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "eslint \"src/**/*.{js,ts,jsx,tsx}\" --quiet --fix",
